@@ -4,6 +4,7 @@ import { Button } from "@heroui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { signOut, useSession } from "@/lib/auth-client";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -11,8 +12,15 @@ const navItems = [
   { href: "/browse-freelancers", label: "Browse Freelancers" },
 ];
 
-const Navbar = ({ isAuthenticated = false, user = null, onLogout = () => {} }) => {
+const Navbar = () => {
   const pathname = usePathname();
+  const { data: sessionData } = useSession();
+  const user = sessionData?.user || null;
+  const isAuthenticated = Boolean(user);
+  const dashboardHref =
+    isAuthenticated && user?.role
+      ? `/dashboard/${user.role.toLowerCase()}`
+      : "/auth/signin";
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -38,6 +46,11 @@ const Navbar = ({ isAuthenticated = false, user = null, onLogout = () => {} }) =
   };
 
   const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);
+
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = "/";
+  };
 
   const themeClasses = useMemo(
     () => ({
@@ -107,7 +120,7 @@ const Navbar = ({ isAuthenticated = false, user = null, onLogout = () => {} }) =
 
           {isAuthenticated ? (
             <>
-              <Link href="/dashboard" className={themeClasses.link(isActive("/dashboard"))}>
+              <Link href={dashboardHref} className={themeClasses.link(isActive("/dashboard"))}>
                 Dashboard
               </Link>
               <Link href="/profile" className={themeClasses.link(isActive("/profile"))}>
@@ -155,7 +168,7 @@ const Navbar = ({ isAuthenticated = false, user = null, onLogout = () => {} }) =
                   </p>
                 </div>
               </div>
-              <Button className={themeClasses.primaryButton} radius="full" size="sm" onPress={onLogout}>
+              <Button className={themeClasses.primaryButton} radius="full" size="sm" onPress={handleLogout}>
                 Logout
               </Button>
             </div>
@@ -214,7 +227,7 @@ const Navbar = ({ isAuthenticated = false, user = null, onLogout = () => {} }) =
           {isAuthenticated ? (
             <>
               <Link
-                href="/dashboard"
+                href={dashboardHref}
                 className={themeClasses.mobileItem(isActive("/dashboard"))}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -231,7 +244,7 @@ const Navbar = ({ isAuthenticated = false, user = null, onLogout = () => {} }) =
                 type="button"
                 onClick={() => {
                   setIsMenuOpen(false);
-                  onLogout();
+                  handleLogout();
                 }}
                 className={themeClasses.mobileItem(false)}
               >
@@ -240,12 +253,12 @@ const Navbar = ({ isAuthenticated = false, user = null, onLogout = () => {} }) =
             </>
           ) : (
             <div className="grid grid-cols-2 gap-3 pt-2">
-              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
                 <Button className={themeClasses.button + " w-full"} radius="full" size="sm" variant="bordered">
                   Login
                 </Button>
               </Link>
-              <Link href="/register" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}>
                 <Button className={themeClasses.primaryButton + " w-full"} radius="full" size="sm">
                   Get Started
                 </Button>

@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { customSession, jwt } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 
@@ -7,12 +8,38 @@ const db = client.db(process.env.AUTH_DB_NAME);
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
-    // Optional: if you don't provide a client, database transactions won't be enabled.
     client,
   }),
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "Client",
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
+    autoSignIn: true,
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+      strategy: "jwt",
+    },
+  },
+  plugins: [
+    jwt(),
+    customSession(async ({ user, session }) => ({
+      user: {
+        ...user,
+        role: user.role ?? "Client",
+      },
+      session,
+    })),
+  ],
   baseURL: process.env.BETTER_AUTH_URL,
   socialProviders: {
     google: {
