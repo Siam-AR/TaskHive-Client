@@ -29,6 +29,13 @@ export const auth = betterAuth({
       maxAge: 5 * 60,
       strategy: "jwt",
     },
+    // Explicit cookie options so server and client agree on HTTPOnly cookie handling
+    cookie: {
+      name: "taskhive_session",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
   },
   plugins: [
     jwt(),

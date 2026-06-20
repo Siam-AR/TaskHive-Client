@@ -10,14 +10,20 @@ export async function getServerSession() {
   return session;
 }
 
-export async function requireRole(role) {
+export async function requireSession() {
   const session = await getServerSession();
-  const userRole = session?.user?.role?.toLowerCase();
-  const requiredRole = role.toLowerCase();
 
   if (!session?.user) {
     redirect("/auth/signin");
   }
+
+  return session;
+}
+
+export async function requireRole(role) {
+  const session = await requireSession();
+  const userRole = session?.user?.role?.toLowerCase();
+  const requiredRole = role.toLowerCase();
 
   if (userRole !== requiredRole) {
     redirect("/");

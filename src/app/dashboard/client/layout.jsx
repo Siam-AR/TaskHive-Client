@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/core/session";
+import { requireRole } from "@/lib/session";
 
 const ClientDashboardLayout = async ({ children }) => {
   await requireRole("client");
