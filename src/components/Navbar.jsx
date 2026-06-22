@@ -21,25 +21,33 @@ const Navbar = () => {
     isAuthenticated && user?.role
       ? `/dashboard/${user.role.toLowerCase()}`
       : "/auth/signin";
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    const storedTheme = window.localStorage.getItem("skillswap-theme");
-
-    if (storedTheme) {
-      return storedTheme === "dark";
-    }
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
+    setHasMounted(true);
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const storedTheme = window.localStorage.getItem("skillswap-theme");
+    const preferredTheme = storedTheme
+      ? storedTheme === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    setIsDarkMode(preferredTheme);
+  }, []);
+
+  useEffect(() => {
+    if (!hasMounted || typeof window === "undefined") {
+      return;
+    }
+
     document.documentElement.classList.toggle("dark", isDarkMode);
     window.localStorage.setItem("skillswap-theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
+  }, [isDarkMode, hasMounted]);
 
   const toggleTheme = () => {
     setIsDarkMode((current) => !current);
@@ -91,6 +99,7 @@ const Navbar = () => {
   return (
     <header
       className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors ${themeClasses.shell}`}
+      suppressHydrationWarning
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="group flex items-center gap-3">
@@ -250,13 +259,6 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Profile
-              </Link>
-              <Link
-                href={dashboardHref}
-                className={themeClasses.mobileItem(isActive("/dashboard"))}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Dashboard
               </Link>
               <button
                 type="button"

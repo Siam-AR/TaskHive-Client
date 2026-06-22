@@ -53,7 +53,8 @@ function SignUpContent() {
             const sessionResponse = await getSession();
             const selectedRole = sessionResponse?.data?.user?.role || role;
             setMessage("Account created successfully. Redirecting...");
-            router.push(redirectByRole(selectedRole));
+            router.replace(redirectByRole(selectedRole));
+            router.refresh();
         } catch (error) {
             setMessageType("error");
             setMessage(error?.message || "Unable to create your account right now.");

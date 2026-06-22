@@ -48,7 +48,8 @@ function SignInContent() {
             const sessionResponse = await getSession();
             const role = sessionResponse?.data?.user?.role || "Client";
             setMessage("Sign in successful. Redirecting...");
-            router.push(redirectByRole(role));
+            router.replace(redirectByRole(role));
+            router.refresh();
         } catch (error) {
             setMessageType("error");
             setMessage(error?.message || "Unable to sign in. Check your email and password.");
