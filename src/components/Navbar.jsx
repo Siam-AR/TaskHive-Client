@@ -1,9 +1,11 @@
 "use client";
 
-import { Avatar, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/react";
+import { Button } from "@heroui/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { FiLogOut, FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
 import { signOut, useSession } from "@/lib/auth-client";
 
 const navItems = [
@@ -21,39 +23,44 @@ const Navbar = () => {
     isAuthenticated && user?.role
       ? `/dashboard/${user.role.toLowerCase()}`
       : "/auth/signin";
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    const storedTheme = window.localStorage.getItem("skillswap-theme");
+    if (storedTheme) {
+      return storedTheme === "dark";
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+  const [showProfileCard, setShowProfileCard] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
-
     if (typeof window === "undefined") {
       return;
     }
 
-    const storedTheme = window.localStorage.getItem("skillswap-theme");
-    const preferredTheme = storedTheme
-      ? storedTheme === "dark"
-      : window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    setIsDarkMode(preferredTheme);
-  }, []);
-
-  useEffect(() => {
-    if (!hasMounted || typeof window === "undefined") {
-      return;
-    }
-
     document.documentElement.classList.toggle("dark", isDarkMode);
-    window.localStorage.setItem("skillswap-theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode, hasMounted]);
+    window.localStorage.setItem(
+      "skillswap-theme",
+      isDarkMode ? "dark" : "light",
+    );
+  }, [isDarkMode]);
 
   const toggleTheme = () => {
     setIsDarkMode((current) => !current);
   };
 
-  const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href) =>
+    pathname === href || pathname.startsWith(`${href}/`);
+  const avatarSrc =
+    user?.image || user?.avatar || user?.profileImage || user?.picture || "";
+  const avatarLabel = user?.name || user?.email || "Account";
+  const avatarInitial = avatarLabel.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
     await signOut();
@@ -63,9 +70,12 @@ const Navbar = () => {
   const themeClasses = useMemo(
     () => ({
       shell: isDarkMode
-        ? "border-slate-800 bg-slate-950/90 text-slate-100 shadow-[0_14px_40px_rgba(2,8,23,0.4)]"
-        : "border-sky-100 bg-white/90 text-slate-900 shadow-[0_14px_40px_rgba(14,165,233,0.14)]",
+        ? "bg-slate-950 text-slate-100"
+        : "bg-white text-slate-900",
       panel: isDarkMode ? "bg-slate-900/90" : "bg-white/95",
+      profileCard: isDarkMode
+        ? "border-slate-700 bg-slate-900 text-slate-100"
+        : "border-slate-200 bg-white text-slate-900",
       link: (active) =>
         [
           "relative rounded-full px-3 py-2 text-sm font-medium transition-colors duration-200",
@@ -78,9 +88,10 @@ const Navbar = () => {
               : "text-slate-600 hover:text-sky-700",
         ].join(" "),
       button: isDarkMode
-        ? "border-slate-700 bg-slate-900 text-slate-100 hover:border-sky-500 hover:text-sky-200"
-        : "border-sky-100 bg-white text-slate-700 hover:border-sky-300 hover:bg-sky-50",
-      primaryButton: "border-0 bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25 hover:from-sky-400 hover:to-blue-500",
+        ? "bg-slate-900 text-slate-100 hover:text-sky-200"
+        : "bg-white text-slate-700 hover:text-sky-700",
+      primaryButton:
+        "border-0 bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25 hover:from-sky-400 hover:to-blue-500",
       mobileItem: (active) =>
         [
           "rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
@@ -93,25 +104,35 @@ const Navbar = () => {
               : "text-slate-600 hover:bg-slate-50 hover:text-sky-700",
         ].join(" "),
     }),
-    [isDarkMode]
+    [isDarkMode],
   );
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors ${themeClasses.shell}`}
+      className={`sticky top-0 z-50 backdrop-blur-xl transition-colors ${themeClasses.shell}`}
       suppressHydrationWarning
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="group flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30 transition-transform duration-200 group-hover:-translate-y-0.5">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
               <path d="M6 7.5h12a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 18 19H6a1.5 1.5 0 0 1-1.5-1.5V9A1.5 1.5 0 0 1 6 7.5Z" />
               <path d="M9 7.5V6a3 3 0 0 1 6 0v1.5" />
             </svg>
           </div>
           <div className="leading-tight">
-            <p className="text-xl font-bold tracking-tight sm:text-2xl">SkillSwap</p>
-            <p className={`text-xs font-medium ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+            <p className="text-xl font-bold tracking-tight sm:text-2xl">
+              SkillSwap
+            </p>
+            <p
+              className={`text-xs font-medium ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+            >
               Freelance micro-tasks
             </p>
           </div>
@@ -119,7 +140,11 @@ const Navbar = () => {
 
         <nav className="hidden items-center gap-2 lg:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={themeClasses.link(isActive(item.href))}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={themeClasses.link(isActive(item.href))}
+            >
               {item.label}
               {isActive(item.href) ? (
                 <span className="absolute inset-x-3 -bottom-1 h-1 rounded-full bg-gradient-to-r from-sky-500 to-blue-500" />
@@ -129,10 +154,16 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             <>
-              <Link href={dashboardHref} className={themeClasses.link(isActive("/dashboard"))}>
+              <Link
+                href={dashboardHref}
+                className={themeClasses.link(isActive("/dashboard"))}
+              >
                 Dashboard
               </Link>
-              <Link href="/profile" className={themeClasses.link(isActive("/profile"))}>
+              <Link
+                href="/profile"
+                className={themeClasses.link(isActive("/profile"))}
+              >
                 Profile
               </Link>
             </>
@@ -143,64 +174,99 @@ const Navbar = () => {
           <button
             type="button"
             onClick={toggleTheme}
-            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-            className={`flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 ${themeClasses.button}`}
+            aria-label={
+              isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+            }
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 dark:border-slate-600 bg-transparent transition hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             {isDarkMode ? (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
-              </svg>
+              <FiMoon className="h-5 w-5 flex-shrink-0" />
             ) : (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <circle cx="12" cy="12" r="4.5" />
-                <path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-              </svg>
+              <FiSun className="h-5 w-5 flex-shrink-0" />
             )}
           </button>
 
           {isAuthenticated ? (
-            <Dropdown placement="bottom-end">
-              <DropdownTrigger>
+            <div className="hidden md:flex w-full items-center justify-end gap-3">
+              <div className="relative flex items-center gap-2">
                 <button
                   type="button"
-                  className={`hidden items-center gap-3 rounded-full border px-3 py-2 transition md:flex ${themeClasses.button}`}
+                  onClick={() => setShowProfileCard((prev) => !prev)}
+                  className="flex items-center gap-2 rounded-full pr-2 transition hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
-                  <Avatar
-                    alt={user?.name || "Account"}
-                    className="h-10 w-10"
-                    name={user?.name || "S"}
-                    src={user?.image || ""}
-                    size="sm"
-                  />
-                  <div className="hidden lg:block text-left">
-                    <p className="text-sm font-semibold leading-none">{user?.name || "Account"}</p>
-                    <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
-                      {user?.role || "Signed in"}
-                    </p>
+                  <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-sky-100 text-sky-700 dark:bg-slate-800 dark:text-sky-200">
+                    {avatarSrc && !avatarError ? (
+                      <Image
+                        src={avatarSrc}
+                        alt={avatarLabel}
+                        width={36}
+                        height={36}
+                        unoptimized
+                        className="h-full w-full object-cover"
+                        onError={() => setAvatarError(true)}
+                      />
+                    ) : (
+                      <span className="text-sm font-semibold">{avatarInitial}</span>
+                    )}
                   </div>
+                  <span className="text-sm font-medium">{avatarLabel}</span>
                 </button>
-              </DropdownTrigger>
-              <DropdownMenu aria-label="User actions" variant="flat">
-                <DropdownItem key="profile" as={Link} href="/profile">
-                  Profile
-                </DropdownItem>
-                <DropdownItem key="dashboard" as={Link} href={dashboardHref}>
-                  Dashboard
-                </DropdownItem>
-                <DropdownItem key="logout" className="text-danger" color="danger" onPress={handleLogout}>
-                  Logout
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+
+                {showProfileCard ? (
+                  <div className={`absolute right-0 top-[calc(100%+0.6rem)] w-64 rounded-2xl border p-4 shadow-xl ${themeClasses.profileCard}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-sky-100 text-sky-700 dark:bg-slate-800 dark:text-sky-200">
+                        {avatarSrc && !avatarError ? (
+                          <Image
+                            src={avatarSrc}
+                            alt={avatarLabel}
+                            width={48}
+                            height={48}
+                            unoptimized
+                            className="h-full w-full object-cover"
+                            onError={() => setAvatarError(true)}
+                          />
+                        ) : (
+                          <span className="text-sm font-semibold">{avatarInitial}</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{avatarLabel}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{user?.role || "Member"}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 truncate text-sm text-slate-600 dark:text-slate-300">{user?.email || "No email provided"}</p>
+                  </div>
+                ) : null}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Logout"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
+              >
+                <FiLogOut className="h-4 w-4" />
+              </button>
+            </div>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
               <Link href="/auth/signin">
-                <Button className={themeClasses.button} radius="full" size="sm" variant="bordered">
+                <Button
+                  className={themeClasses.button}
+                  radius="full"
+                  size="sm"
+                  variant="bordered"
+                >
                   Login
                 </Button>
               </Link>
               <Link href="/auth/signup">
-                <Button className={themeClasses.primaryButton} radius="full" size="sm">
+                <Button
+                  className={themeClasses.primaryButton}
+                  radius="full"
+                  size="sm"
+                >
                   Get Started
                 </Button>
               </Link>
@@ -215,13 +281,9 @@ const Navbar = () => {
             aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
+              <FiX className="h-5 w-5" />
             ) : (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
+              <FiMenu className="h-5 w-5" />
             )}
           </button>
         </div>
@@ -274,12 +336,21 @@ const Navbar = () => {
           ) : (
             <div className="grid grid-cols-2 gap-3 pt-2">
               <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
-                <Button className={themeClasses.button + " w-full"} radius="full" size="sm" variant="bordered">
+                <Button
+                  className={themeClasses.button + " w-full"}
+                  radius="full"
+                  size="sm"
+                  variant="bordered"
+                >
                   Login
                 </Button>
               </Link>
               <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}>
-                <Button className={themeClasses.primaryButton + " w-full"} radius="full" size="sm">
+                <Button
+                  className={themeClasses.primaryButton + " w-full"}
+                  radius="full"
+                  size="sm"
+                >
                   Get Started
                 </Button>
               </Link>
