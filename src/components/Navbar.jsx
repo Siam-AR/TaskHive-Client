@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Avatar, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -150,28 +150,39 @@ const Navbar = () => {
           </button>
 
           {isAuthenticated ? (
-            <div className="hidden items-center gap-3 md:flex">
-              <div className={`flex items-center gap-3 rounded-full border px-3 py-2 ${themeClasses.button}`}>
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold ${
-                    isDarkMode
-                      ? "border-sky-400/30 bg-sky-500/15 text-sky-200"
-                      : "border-sky-200 bg-sky-50 text-sky-700"
-                  }`}
+            <Dropdown placement="bottom-end">
+              <DropdownTrigger>
+                <button
+                  type="button"
+                  className={`hidden items-center gap-3 rounded-full border px-3 py-2 transition md:flex ${themeClasses.button}`}
                 >
-                  {user?.name?.charAt(0)?.toUpperCase() || "S"}
-                </div>
-                <div className="hidden lg:block">
-                  <p className="text-sm font-semibold leading-none">{user?.name || "Account"}</p>
-                  <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
-                    {user?.email || "Signed in"}
-                  </p>
-                </div>
-              </div>
-              <Button className={themeClasses.primaryButton} radius="full" size="sm" onPress={handleLogout}>
-                Logout
-              </Button>
-            </div>
+                  <Avatar
+                    alt={user?.name || "Account"}
+                    className="h-10 w-10"
+                    name={user?.name || "S"}
+                    src={user?.image || ""}
+                    size="sm"
+                  />
+                  <div className="hidden lg:block text-left">
+                    <p className="text-sm font-semibold leading-none">{user?.name || "Account"}</p>
+                    <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                      {user?.role || "Signed in"}
+                    </p>
+                  </div>
+                </button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="User actions" variant="flat">
+                <DropdownItem key="profile" as={Link} href="/profile">
+                  Profile
+                </DropdownItem>
+                <DropdownItem key="dashboard" as={Link} href={dashboardHref}>
+                  Dashboard
+                </DropdownItem>
+                <DropdownItem key="logout" className="text-danger" color="danger" onPress={handleLogout}>
+                  Logout
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
               <Link href="/auth/signin">
@@ -239,6 +250,13 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Profile
+              </Link>
+              <Link
+                href={dashboardHref}
+                className={themeClasses.mobileItem(isActive("/dashboard"))}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Dashboard
               </Link>
               <button
                 type="button"
