@@ -6,6 +6,21 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 const client = new MongoClient(process.env.MONGO_DB_URI);
 const db = client.db(process.env.AUTH_DB_NAME);
 
+const appUrl =
+  process.env.BETTER_AUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
+
+const trustedOrigins = [
+  appUrl,
+  "http://localhost:3000",
+  "http://localhost:5000",
+].filter(Boolean);
+
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
@@ -29,14 +44,14 @@ export const auth = betterAuth({
       maxAge: 5 * 60,
       strategy: "jwt",
     },
-    // Explicit cookie options so server and client agree on HTTPOnly cookie handling
     cookie: {
       name: "taskhive_session",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
     },
   },
+  trustedOrigins,
   plugins: [
     jwt(),
     customSession(async ({ user, session }) => ({
@@ -47,10 +62,7 @@ export const auth = betterAuth({
       session,
     })),
   ],
-  baseURL:
-    process.env.BETTER_AUTH_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+  baseURL: appUrl,
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
