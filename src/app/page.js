@@ -5,14 +5,14 @@ import LatestTasks from "@/components/LatestTasks";
 import TopFreelancers from "@/components/TopFreelancers";
 import HowItWorks from "@/components/HowItWorks";
 import StatsSection from "@/components/StatsSection";
-
+import Footer from "@/components/Footer";
 
 function HomePage({ data }) {
-  const { latestTasks, topFreelancers, stats} = data;
+  const { latestTasks, topFreelancers, stats } = data;
 
   return (
     <main className="space-y-10">
-      <Navbar/>
+      <Navbar />
       <div className="container mx-auto py-4 md:py-6 lg:py-1">
         <HomeHero />
         <LatestTasks tasks={latestTasks} />
@@ -20,6 +20,7 @@ function HomePage({ data }) {
         <HowItWorks></HowItWorks>
         <StatsSection stats={stats} />
       </div>
+      <Footer></Footer>
     </main>
   );
 }
