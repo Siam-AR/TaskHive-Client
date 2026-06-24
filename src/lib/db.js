@@ -95,6 +95,30 @@ export async function getHomepageData() {
   const totalPayout = payoutAggregation.length ? payoutAggregation[0].total : 0;
   const openTasksCount = await tasksCollection.countDocuments({ status: "open" });
 
+  const taskStatusBreakdown = await tasksCollection
+    .aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ])
+    .toArray();
+
+  const chartData = taskStatusBreakdown.map((entry) => ({
+    name:
+      entry._id === "open"
+        ? "Open"
+        : entry._id === "in progress"
+          ? "In Progress"
+          : entry._id === "completed"
+            ? "Completed"
+            : entry._id,
+    value: entry.count,
+  }));
+
   return {
     latestTasks: latestTasksWithClient,
     topFreelancers,
@@ -103,7 +127,7 @@ export async function getHomepageData() {
       totalTasks,
       totalPayout,
       openTasks: openTasksCount,
+      taskStatusChartData: chartData,
     },
   };
 }
-//homepage

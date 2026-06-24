@@ -4,10 +4,11 @@ import HomeHero from "@/components/HomeHero";
 import LatestTasks from "@/components/LatestTasks";
 import TopFreelancers from "@/components/TopFreelancers";
 import HowItWorks from "@/components/HowItWorks";
+import StatsSection from "@/components/StatsSection";
 
 
 function HomePage({ data }) {
-  const { latestTasks, topFreelancers} = data;
+  const { latestTasks, topFreelancers, stats} = data;
 
   return (
     <main className="space-y-10">
@@ -17,6 +18,7 @@ function HomePage({ data }) {
         <LatestTasks tasks={latestTasks} />
         <TopFreelancers freelancers={topFreelancers} />
         <HowItWorks></HowItWorks>
+        <StatsSection stats={stats} />
       </div>
     </main>
   );
