@@ -80,7 +80,7 @@ export async function getHomepageData() {
       };
     })
     .sort((a, b) => b.rating - a.rating || b.finishedJobs - a.finishedJobs)
-    .slice(0, 6);
+    .slice(0, 8);
 
   const totalUsers = await usersCollection.countDocuments();
   const totalTasks = await tasksCollection.countDocuments();
