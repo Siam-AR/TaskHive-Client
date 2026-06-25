@@ -71,6 +71,12 @@ export default async function FreelancerDetailsPage({ params }) {
               </div>
               <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                 <FiStar className="text-sky-600" />
+                <span>
+                  {Number(freelancer.rating || 0).toFixed(1)} rating · {freelancer.reviewCount || 0} reviews · {freelancer.finishedJobs || 0} jobs
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Role</span>
                 <span>{freelancer.role || "Freelancer"}</span>
               </div>
             </div>

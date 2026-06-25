@@ -98,7 +98,7 @@ export default async function BrowseFreelancersPage({ searchParams }) {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-                    <span>{freelancer.location || "Location not listed"}</span>
+                    <span>{freelancer.location || ""}</span>
                     <span className="font-semibold text-sky-600 transition group-hover:text-sky-700">View profile →</span>
                   </div>
                 </Link>
