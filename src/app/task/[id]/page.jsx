@@ -2,8 +2,12 @@ import Link from "next/link";
 import { FiClock, FiDollarSign, FiTag, FiUser } from "react-icons/fi";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getTaskById } from "@/lib/db";
+import TaskProposalForm from "@/components/TaskProposalForm";
+import { fetchTaskById } from "@/lib/api";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function formatDate(dateString) {
   if (!dateString) {
@@ -48,8 +52,10 @@ function getStatusBadge(status) {
 }
 
 export default async function TaskDetailsPage({ params }) {
-  const { id } = await params;
-  const task = await getTaskById(id);
+  const routeParams = await params;
+  const taskId = routeParams?.id || routeParams?.taskId || routeParams?.slug;
+  const taskResponse = await fetchTaskById(taskId);
+  const task = taskResponse?.data || null;
 
   if (!task) {
     notFound();
@@ -99,7 +105,10 @@ export default async function TaskDetailsPage({ params }) {
           </div>
 
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">Client details</h2>
+            <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">Submit a proposal</h2>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              Share your offer and pitch to the client.
+            </p>
 
             <div className="mt-6 flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 font-semibold text-sky-700 dark:bg-slate-900 dark:text-sky-300">
@@ -119,6 +128,8 @@ export default async function TaskDetailsPage({ params }) {
                 Freelancers can review this task and submit a proposal once they are ready to start.
               </p>
             </div>
+
+            <TaskProposalForm taskId={task._id} />
 
             <Link
               href="/browse-tasks"

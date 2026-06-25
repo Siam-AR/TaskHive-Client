@@ -15,7 +15,15 @@ export default async function BrowseTasksPage({ searchParams }) {
   const category = typeof params.category === "string" ? params.category : "";
   const page = Number.parseInt(typeof params.page === "string" ? params.page : "1", 10);
 
-  const response = await fetchBrowseTasks({ search, category, page, limit: 3 });
+  let response = null;
+  let error = null;
+
+  try {
+    response = await fetchBrowseTasks({ search, category, page, limit: 3 });
+  } catch (err) {
+    error = err?.message || "Unable to load tasks from the database.";
+  }
+
   const tasks = Array.isArray(response?.data) ? response.data : [];
   const totalTasks = response?.pagination?.totalTasks ?? tasks.length;
   const totalPages = response?.pagination?.totalPages ?? 1;
@@ -54,7 +62,14 @@ export default async function BrowseTasksPage({ searchParams }) {
           )}
         </div>
 
-        {tasks.length ? (
+        {error ? (
+          <div className="mt-10 rounded-[2rem] border border-dashed border-rose-300 bg-white p-10 text-center shadow-sm dark:border-rose-700 dark:bg-slate-900">
+            <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">Unable to load tasks</h2>
+            <p className="mt-3 text-slate-600 dark:text-slate-400">
+              {error}
+            </p>
+          </div>
+        ) : tasks.length ? (
           <>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-3">
               {tasks.map((task) => (

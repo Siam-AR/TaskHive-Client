@@ -148,22 +148,7 @@ export default function StatsSection({ stats }) {
           {items.map((item) => (
             <Card
               key={item.label}
-              classNames={{
-                base: `
-      group
-      rounded-[1.5rem]
-      border border-gray-200
-      bg-white
-      dark:bg-slate-950
-
-      transition-all duration-300
-      hover:-translate-y-1
-      hover:border-sky-400
-      hover:shadow-[0_0_0_1px_rgb(14_165_233),0_12px_32px_rgba(14,165,233,0.15)]
-
-      dark:border-slate-800
-    `,
-              }}
+              className={``}
             >
               <div className="flex items-center justify-between p-5">
                 {/* TEXT */}
