@@ -23,18 +23,8 @@ const Navbar = () => {
     isAuthenticated && user?.role
       ? `/dashboard/${user.role.toLowerCase()}`
       : "/auth/signin";
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    const storedTheme = window.localStorage.getItem("skillswap-theme");
-    if (storedTheme) {
-      return storedTheme === "dark";
-    }
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const [showProfileCard, setShowProfileCard] = useState(false);
@@ -44,12 +34,25 @@ const Navbar = () => {
       return;
     }
 
+    const storedTheme = window.localStorage.getItem("skillswap-theme");
+    const initialTheme = storedTheme
+      ? storedTheme === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    setIsDarkMode(initialTheme);
+    setHasMounted(true);
+    document.documentElement.classList.toggle("dark", initialTheme);
+    window.localStorage.setItem("skillswap-theme", initialTheme ? "dark" : "light");
+  }, []);
+
+  useEffect(() => {
+    if (!hasMounted || typeof window === "undefined") {
+      return;
+    }
+
     document.documentElement.classList.toggle("dark", isDarkMode);
-    window.localStorage.setItem(
-      "skillswap-theme",
-      isDarkMode ? "dark" : "light",
-    );
-  }, [isDarkMode]);
+    window.localStorage.setItem("skillswap-theme", isDarkMode ? "dark" : "light");
+  }, [hasMounted, isDarkMode]);
 
   const toggleTheme = () => {
     setIsDarkMode((current) => !current);
@@ -114,7 +117,7 @@ const Navbar = () => {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="group flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30 transition-transform duration-200 group-hover:-translate-y-0.5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-br from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30 transition-transform duration-200 group-hover:-translate-y-0.5">
             <svg
               viewBox="0 0 24 24"
               className="h-6 w-6"
@@ -147,7 +150,7 @@ const Navbar = () => {
             >
               {item.label}
               {isActive(item.href) ? (
-                <span className="absolute inset-x-3 -bottom-1 h-1 rounded-full bg-gradient-to-r from-sky-500 to-blue-500" />
+                <span className="absolute inset-x-3 -bottom-1 h-1 rounded-full bg-linear-to-r from-sky-500 to-blue-500" />
               ) : null}
             </Link>
           ))}
@@ -177,12 +180,12 @@ const Navbar = () => {
             aria-label={
               isDarkMode ? "Switch to light mode" : "Switch to dark mode"
             }
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 dark:border-slate-600 bg-transparent transition hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-transparent transition hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
           >
             {isDarkMode ? (
-              <FiMoon className="h-5 w-5 flex-shrink-0" />
+              <FiMoon className="h-5 w-5 shrink-0" />
             ) : (
-              <FiSun className="h-5 w-5 flex-shrink-0" />
+              <FiSun className="h-5 w-5 shrink-0" />
             )}
           </button>
 
