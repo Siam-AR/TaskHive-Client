@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, Badge } from "@heroui/react";
 import { FiClock, FiUser, FiArrowRight } from "react-icons/fi";
 
@@ -53,22 +54,22 @@ export default function LatestTasks({ tasks }) {
       {/* Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {tasks.map((task) => (
-          <Card
-            key={task._id}
-            className="
-              group relative overflow-hidden rounded-[2rem]
-              border border-slate-200 bg-white p-6
-              transition-all duration-300
+          <Link key={task._id} href={`/task/${task._id}`} className="block h-full">
+            <Card
+              className="
+                group relative h-full overflow-hidden rounded-[2rem]
+                border border-slate-200 bg-white p-6
+                transition-all duration-300
 
-              hover:-translate-y-1
-              hover:border-cyan-400
-              hover:shadow-[0_0_0_1px_rgb(34_211_238),0_8px_30px_rgba(34,211,238,0.15)]
+                hover:-translate-y-1
+                hover:border-cyan-400
+                hover:shadow-[0_0_0_1px_rgb(34_211_238),0_8px_30px_rgba(34,211,238,0.15)]
 
-              dark:border-slate-800
-              dark:bg-slate-950
-              dark:hover:shadow-none
-            "
-          >
+                dark:border-slate-800
+                dark:bg-slate-950
+                dark:hover:shadow-none
+              "
+            >
             {/* Gradient Hover Border - Dark Mode Only */}
             <div className="pointer-events-none absolute inset-0 hidden rounded-[2rem] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:block">
               <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-r from-sky-400 via-indigo-400 to-emerald-400 p-[1px]">
@@ -127,15 +128,13 @@ export default function LatestTasks({ tasks }) {
                 </div>
 
                 {/* Action */}
-                <a
-                  href={`/task/${task._id}`}
-                  className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-4 py-2 text-xs font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-200 dark:hover:bg-sky-900/50"
-                >
+                <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-4 py-2 text-xs font-semibold text-sky-700 transition group-hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-200 dark:group-hover:bg-sky-900/50">
                   View task <FiArrowRight />
-                </a>
+                </span>
               </div>
             </div>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </div>
     </section>

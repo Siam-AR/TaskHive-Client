@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import { FiStar } from "react-icons/fi";
 import { Card } from "@heroui/react";
@@ -27,24 +28,24 @@ export default function TopFreelancers({ freelancers }) {
     {/* Grid */}
 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
   {freelancers.map((freelancer) => (
-    <Card
-      key={freelancer.email}
-      className="
-        group min-w-0
-        rounded-[2rem]
-        border border-slate-200
-        bg-white
-        p-5
-        transition-all duration-300
+    <Link key={freelancer.email} href={`/freelancer/${freelancer._id || freelancer.email}`} className="block h-full">
+      <Card
+        className="
+          group h-full min-w-0
+          rounded-[2rem]
+          border border-slate-200
+          bg-white
+          p-5
+          transition-all duration-300
 
-        hover:-translate-y-1
-        hover:border-cyan-400
-        hover:shadow-[0_0_0_1px_rgb(34_211_238),0_12px_32px_rgba(34,211,238,0.12)]
+          hover:-translate-y-1
+          hover:border-cyan-400
+          hover:shadow-[0_0_0_1px_rgb(34_211_238),0_12px_32px_rgba(34,211,238,0.12)]
 
-        dark:border-slate-800
-        dark:bg-slate-950
-      "
-    >
+          dark:border-slate-800
+          dark:bg-slate-950
+        "
+      >
       {/* Top */}
       <div className="flex items-start gap-3">
         {/* Avatar */}
@@ -112,7 +113,8 @@ export default function TopFreelancers({ freelancers }) {
           {freelancer.finishedJobs} jobs
         </div>
       </div>
-    </Card>
+      </Card>
+    </Link>
   ))}
 </div>
     </section>
