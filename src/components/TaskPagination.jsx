@@ -4,7 +4,7 @@ import { Pagination } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function TaskPagination({ currentPage, totalPages }) {
+export default function TaskPagination({ currentPage, totalPages, basePath = "/browse-tasks" }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [page, setPage] = useState(currentPage);
@@ -29,7 +29,7 @@ export default function TaskPagination({ currentPage, totalPages }) {
     }
 
     const query = params.toString();
-    const targetUrl = `/browse-tasks${query ? `?${query}` : ""}`;
+    const targetUrl = `${basePath}${query ? `?${query}` : ""}`;
 
     router.push(targetUrl, { scroll: false });
     router.refresh();

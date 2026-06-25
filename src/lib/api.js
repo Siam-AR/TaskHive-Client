@@ -60,6 +60,15 @@ export async function fetchTaskById(taskId) {
   return apiFetch(`/api/tasks/${encodeURIComponent(taskId)}`, { method: "GET" });
 }
 
+export async function fetchBrowseFreelancers(query = {}) {
+  const qs = new URLSearchParams(query).toString();
+  return apiFetch(`/api/freelancers${qs ? `?${qs}` : ""}`, { method: "GET" });
+}
+
+export async function fetchFreelancerById(freelancerId) {
+  return apiFetch(`/api/freelancers/${encodeURIComponent(freelancerId)}`, { method: "GET" });
+}
+
 export async function checkProposalStatus(taskId) {
   return apiFetch(`/api/proposals/check/${encodeURIComponent(taskId)}`, { method: "GET" });
 }
