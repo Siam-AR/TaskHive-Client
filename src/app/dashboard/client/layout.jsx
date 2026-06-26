@@ -1,8 +1,41 @@
-import { requireRole } from "@/lib/session";
+import Link from "next/link";
+import { FiArrowLeft } from "react-icons/fi";
+import { requireRole, getServerSession } from "@/lib/session";
+import ClientSidebar from "@/components/dashboard/ClientSidebar";
+import ThemeToggleButton from "@/components/dashboard/ThemeToggleButton";
 
 const ClientDashboardLayout = async ({ children }) => {
   await requireRole("client");
-  return children;
+  const session = await getServerSession();
+  const user = session?.user || null;
+
+  return (
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.1),_transparent_32%),linear-gradient(135deg,_#f8fbff_0%,_#f8fafc_100%)] px-4 py-6 text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_30%),linear-gradient(135deg,_#020617_0%,_#020617_100%)] dark:text-slate-100 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[2rem] border border-slate-200 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Client dashboard</p>
+            <h1 className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">Manage your freelance workspace</h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggleButton />
+            <Link href="/" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+              <FiArrowLeft className="h-4 w-4" />
+              Back to home
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <ClientSidebar user={user} />
+          <section className="flex-1 rounded-[2rem] border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/80 sm:p-6 lg:p-8">
+            {children}
+          </section>
+        </div>
+      </div>
+    </main>
+  );
 };
 
 export default ClientDashboardLayout;
