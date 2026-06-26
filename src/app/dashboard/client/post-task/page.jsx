@@ -1,3 +1,9 @@
+import ClientPostTaskForm from "@/components/dashboard/ClientPostTaskForm";
+
 export default function ClientPostTaskPage() {
-  return <p>This is Client Post Task page.</p>;
+  return (
+    <div className="space-y-6">
+      <ClientPostTaskForm />
+    </div>
+  );
 }

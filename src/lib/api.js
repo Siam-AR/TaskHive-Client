@@ -1,3 +1,5 @@
+import { getSession } from "@/lib/auth-client";
+
 const DEFAULT_SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 async function apiFetch(path, opts = {}) {
@@ -5,7 +7,21 @@ async function apiFetch(path, opts = {}) {
 
   const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
 
-  // Ensure cookies (HTTPOnly session cookie) are sent with the request
+  if (typeof window !== "undefined") {
+    try {
+      const sessionResult = await getSession();
+      const sessionUser = sessionResult?.data?.user || sessionResult?.user || sessionResult?.data?.session?.user || null;
+
+      if (sessionUser) {
+        headers["X-User-Id"] = sessionUser.id || sessionUser._id || sessionUser.userId || "";
+        headers["X-User-Email"] = sessionUser.email || "";
+        headers["X-User-Role"] = sessionUser.role || "";
+      }
+    } catch (error) {
+      console.warn("Unable to attach auth headers", error);
+    }
+  }
+
   const fetchOpts = Object.assign({}, opts, {
     headers,
     credentials: "include",
