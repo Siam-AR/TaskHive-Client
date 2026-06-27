@@ -14,7 +14,7 @@ if (!appDbName) {
 let clientPromise;
 
 if (!globalThis._mongoClientPromise) {
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+  const client = new MongoClient(uri);
   globalThis._mongoClientPromise = client.connect();
 }
 
