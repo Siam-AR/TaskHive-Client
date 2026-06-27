@@ -39,6 +39,7 @@ export default function ClientMyTasksPage() {
   }, []);
 
   const [editingTask, setEditingTask] = useState(null);
+  const [updateSuccessTask, setUpdateSuccessTask] = useState(null);
 
   const totalTasks = tasks.length;
   const openTasks = getStatusCount(tasks, (status) => status === "open");
@@ -52,6 +53,7 @@ export default function ClientMyTasksPage() {
       )
     );
     setEditingTask(null);
+    setUpdateSuccessTask(updatedTask);
   };
 
   return (
@@ -152,6 +154,25 @@ export default function ClientMyTasksPage() {
                   </button>
                 </div>
                 <EditTaskForm task={editingTask} onCancel={() => setEditingTask(null)} onUpdated={handleTaskUpdated} />
+              </div>
+            </div>
+          ) : null}
+
+          {updateSuccessTask ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+              <div className="w-full max-w-md rounded-[1.75rem] bg-white p-6 text-center shadow-2xl dark:bg-slate-950">
+                <div className="mb-4 text-sky-600"></div>
+                <h3 className="text-xl font-semibold text-slate-950 dark:text-white">Task updated successfully</h3>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                  Your task {updateSuccessTask.title} has been saved.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setUpdateSuccessTask(null)}
+                  className="mt-6 inline-flex rounded-full bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-500"
+                >
+                  Continue
+                </button>
               </div>
             </div>
           ) : null}
