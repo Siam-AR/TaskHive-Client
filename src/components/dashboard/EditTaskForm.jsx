@@ -1,13 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { Button, FieldError, Form, Input, Label, TextArea, TextField } from "@heroui/react";
-import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { Button, Input, Label, TextArea } from "@heroui/react";
+import { FiAlertCircle } from "react-icons/fi";
 import { updateTask } from "@/lib/api";
 
 const categories = ["Design", "Writing", "Development", "Marketing", "Other"];
 
+const normalizeTaskId = (id) => {
+  if (typeof id === "string") {
+    return id.trim();
+  }
+
+  if (id && typeof id === "object") {
+    if (typeof id.toHexString === "function") {
+      return id.toHexString();
+    }
+
+    if (typeof id.toString === "function") {
+      const stringValue = id.toString();
+      if (stringValue.startsWith("ObjectId(\"") && stringValue.endsWith("\")")) {
+        return stringValue.slice(9, -2);
+      }
+      return stringValue;
+    }
+  }
+
+  return String(id ?? "").trim();
+};
+
 export default function EditTaskForm({ task, onCancel, onUpdated }) {
+  const taskId = normalizeTaskId(task?._id ?? task?.id ?? task?.taskId ?? "");
   const [formValues, setFormValues] = useState({
     title: task?.title || "",
     category: task?.category || "",
@@ -15,15 +38,61 @@ export default function EditTaskForm({ task, onCancel, onUpdated }) {
     budget: task?.budget || "",
     deadline: task?.deadline ? String(task.deadline).slice(0, 10) : "",
   });
+  const [fieldErrors, setFieldErrors] = useState({});
   const [statusMessage, setStatusMessage] = useState({ type: "idle", text: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateField = (field, value) => {
     setFormValues((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => ({ ...current, [field]: "" }));
+  };
+
+  const validateFields = () => {
+    const errors = {};
+
+    if (!String(formValues.title || "").trim()) {
+      errors.title = "Please enter a task title";
+    } else if (String(formValues.title).trim().length < 5) {
+      errors.title = "Title should be at least 5 characters";
+    }
+
+    if (!String(formValues.category || "").trim()) {
+      errors.category = "Please choose a category";
+    }
+
+    if (!String(formValues.description || "").trim()) {
+      errors.description = "Please describe what you need";
+    } else if (String(formValues.description).trim().length < 20) {
+      errors.description = "Description should be at least 20 characters";
+    }
+
+    const budgetValue = Number(formValues.budget || 0);
+    if (!formValues.budget && formValues.budget !== 0) {
+      errors.budget = "Please enter a budget";
+    } else if (budgetValue <= 0) {
+      errors.budget = "Budget must be greater than zero";
+    }
+
+    if (!String(formValues.deadline || "").trim()) {
+      errors.deadline = "Please select a deadline";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!taskId) {
+      setStatusMessage({ type: "error", text: "Unable to update the task: missing task identifier." });
+      return;
+    }
+
+    if (!validateFields()) {
+      setStatusMessage({ type: "error", text: "Please fix the highlighted fields before saving." });
+      return;
+    }
 
     const payload = {
       title: String(formValues.title || "").trim(),
@@ -31,23 +100,16 @@ export default function EditTaskForm({ task, onCancel, onUpdated }) {
       description: String(formValues.description || "").trim(),
       budget: Number(formValues.budget || 0),
       deadline: String(formValues.deadline || "").trim(),
+      id: taskId,
+      _id: taskId,
+      taskId: taskId,
     };
-
-    if (!payload.title || !payload.category || !payload.description || !payload.deadline || !payload.budget) {
-      setStatusMessage({ type: "error", text: "Please fill out all required fields before saving." });
-      return;
-    }
-
-    if (payload.budget <= 0) {
-      setStatusMessage({ type: "error", text: "Budget must be greater than zero." });
-      return;
-    }
 
     setIsSubmitting(true);
     setStatusMessage({ type: "idle", text: "" });
 
     try {
-      const response = await updateTask(task._id || task.id, payload);
+      const response = await updateTask(taskId, payload);
       if (response?.success && response?.data) {
         onUpdated(response.data);
       } else {
@@ -60,9 +122,14 @@ export default function EditTaskForm({ task, onCancel, onUpdated }) {
     }
   };
 
+  const inputClass = (error) =>
+    `rounded-2xl border px-3 py-2 text-sm transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:bg-slate-900 dark:text-slate-100 ${
+      error ? "border-rose-500 ring-1 ring-rose-200 dark:border-rose-400" : "border-slate-300 dark:border-slate-700"
+    }`;
+
   return (
     <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-950">
-      <Form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Edit open task</p>
           <h3 className="text-2xl font-semibold text-slate-950 dark:text-white">Update your task details</h3>
@@ -71,32 +138,25 @@ export default function EditTaskForm({ task, onCancel, onUpdated }) {
           </p>
         </div>
 
-        <TextField
-          isRequired
-          name="title"
-          validate={(value) => {
-            if (!value?.trim()) return "Please enter a task title";
-            if (value.trim().length < 5) return "Title should be at least 5 characters";
-            return null;
-          }}
-        >
+        <div className="space-y-2">
           <Label>Task title</Label>
           <Input
+            className={inputClass(fieldErrors.title)}
             name="title"
             placeholder="Design a landing page for my startup"
             value={formValues.title}
             onChange={(event) => updateField("title", event.target.value)}
           />
-          <FieldError />
-        </TextField>
+          {fieldErrors.title ? <p className="text-sm text-rose-600 dark:text-rose-400">{fieldErrors.title}</p> : null}
+        </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="space-y-2">
           <Label>Category</Label>
           <select
             name="category"
             value={formValues.category}
             onChange={(event) => updateField("category", event.target.value)}
-            className="rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className={inputClass(fieldErrors.category)}
           >
             <option value="">Choose a category</option>
             {categories.map((category) => (
@@ -105,42 +165,28 @@ export default function EditTaskForm({ task, onCancel, onUpdated }) {
               </option>
             ))}
           </select>
-          {!formValues.category ? <p className="text-sm text-rose-600 dark:text-rose-400">Please choose a category</p> : null}
+          {fieldErrors.category ? <p className="text-sm text-rose-600 dark:text-rose-400">{fieldErrors.category}</p> : null}
         </div>
 
-        <TextField
-          isRequired
-          name="description"
-          validate={(value) => {
-            if (!value?.trim()) return "Please describe what you need";
-            if (value.trim().length < 20) return "Description should be at least 20 characters";
-            return null;
-          }}
-        >
+        <div className="space-y-2">
           <Label>Description</Label>
           <TextArea
+            className={inputClass(fieldErrors.description)}
             name="description"
             placeholder="Describe the task, deliverables, style, and any requirements."
             value={formValues.description}
             onChange={(event) => updateField("description", event.target.value)}
           />
-          <FieldError />
-        </TextField>
+          {fieldErrors.description ? (
+            <p className="text-sm text-rose-600 dark:text-rose-400">{fieldErrors.description}</p>
+          ) : null}
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <TextField
-            isRequired
-            name="budget"
-            type="number"
-            validate={(value) => {
-              const numericValue = Number(value);
-              if (!value) return "Please enter a budget";
-              if (numericValue <= 0) return "Budget must be greater than zero";
-              return null;
-            }}
-          >
+          <div className="space-y-2">
             <Label>Budget (USD)</Label>
             <Input
+              className={inputClass(fieldErrors.budget)}
               name="budget"
               min="1"
               step="1"
@@ -149,27 +195,22 @@ export default function EditTaskForm({ task, onCancel, onUpdated }) {
               value={formValues.budget}
               onChange={(event) => updateField("budget", event.target.value)}
             />
-            <FieldError />
-          </TextField>
+            {fieldErrors.budget ? <p className="text-sm text-rose-600 dark:text-rose-400">{fieldErrors.budget}</p> : null}
+          </div>
 
-          <TextField
-            isRequired
-            name="deadline"
-            type="date"
-            validate={(value) => {
-              if (!value) return "Please select a deadline";
-              return null;
-            }}
-          >
+          <div className="space-y-2">
             <Label>Deadline</Label>
             <Input
+              className={inputClass(fieldErrors.deadline)}
               name="deadline"
               type="date"
               value={formValues.deadline}
               onChange={(event) => updateField("deadline", event.target.value)}
             />
-            <FieldError />
-          </TextField>
+            {fieldErrors.deadline ? (
+              <p className="text-sm text-rose-600 dark:text-rose-400">{fieldErrors.deadline}</p>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -187,7 +228,7 @@ export default function EditTaskForm({ task, onCancel, onUpdated }) {
             <span>{statusMessage.text}</span>
           </div>
         ) : null}
-      </Form>
+      </form>
     </div>
   );
 }

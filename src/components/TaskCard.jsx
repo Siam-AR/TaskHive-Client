@@ -101,13 +101,11 @@ export default function TaskCard({ task, actions }) {
             </div>
           </div>
 
-          <div className="mt-auto pt-6">
-            <div className="flex items-center justify-between gap-4 text-sm font-semibold text-sky-600">
-              <span>View Details →</span>
-              {actions ? <span>{actions}</span> : null}
-            </div>
+          <div className="mt-auto pt-6 text-sm font-semibold text-sky-600">
+            <span>View Details →</span>
           </div>
         </Link>
+        {actions ? <div className="p-6 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">{actions}</div> : null}
       </div>
     </div>
   );

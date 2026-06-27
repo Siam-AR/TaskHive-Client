@@ -121,6 +121,7 @@ export default function ClientMyTasksPage() {
                         type="button"
                         onClick={(event) => {
                           event.preventDefault();
+                          event.stopPropagation();
                           setEditingTask(task);
                         }}
                         className="inline-flex rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"

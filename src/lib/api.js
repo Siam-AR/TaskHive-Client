@@ -94,7 +94,12 @@ export async function createTask(payload) {
 }
 
 export async function updateTask(taskId, payload) {
-  return apiFetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+  const normalizedId = String(taskId || "").trim();
+  if (!normalizedId) {
+    throw new Error("Task ID is required to update a task.");
+  }
+
+  return apiFetch(`/api/tasks/${encodeURIComponent(normalizedId)}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });

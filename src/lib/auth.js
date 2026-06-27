@@ -3,8 +3,50 @@ import { customSession, jwt } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 
-const client = new MongoClient(process.env.MONGO_DB_URI);
-const db = client.db(process.env.AUTH_DB_NAME);
+const uri = process.env.MONGO_DB_URI;
+const authDbName = process.env.AUTH_DB_NAME || "skill-swap";
+
+if (!uri) {
+  throw new Error("Missing MONGO_DB_URI environment variable");
+}
+
+const createMongoClient = () => {
+  const existingClient = globalThis._betterAuthMongoClient;
+  const existingPromise = globalThis._betterAuthMongoClientPromise;
+
+  if (existingClient && typeof existingClient.topology?.isConnected === "function") {
+    try {
+      if (existingClient.topology.isConnected()) {
+        return {
+          client: existingClient,
+          clientPromise: existingPromise,
+        };
+      }
+    } catch {
+      // ignore and recreate below
+    }
+  }
+
+  const client = new MongoClient(uri, {
+    appName: "TaskHiveAuth",
+  });
+  const clientPromise = client.connect();
+
+  globalThis._betterAuthMongoClient = client;
+  globalThis._betterAuthMongoClientPromise = clientPromise;
+
+  clientPromise.catch((error) => {
+    console.error("Mongo client connection error:", error);
+  });
+
+  return {
+    client,
+    clientPromise,
+  };
+};
+
+const { client, clientPromise } = createMongoClient();
+const db = client.db(authDbName);
 
 const appUrl =
   process.env.BETTER_AUTH_URL ||
