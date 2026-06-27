@@ -93,6 +93,13 @@ export async function createTask(payload) {
   return apiFetch(`/api/tasks`, { method: "POST", body: JSON.stringify(payload) });
 }
 
+export async function updateTask(taskId, payload) {
+  return apiFetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function fetchMyTasks() {
   const response = await apiFetch(`/api/tasks/my`, { method: "GET" });
 
@@ -170,6 +177,7 @@ const api = {
   getAuthMe,
   fetchTasks,
   createTask,
+  updateTask,
   fetchMyTasks,
   submitProposal,
   fetchMyProposals,

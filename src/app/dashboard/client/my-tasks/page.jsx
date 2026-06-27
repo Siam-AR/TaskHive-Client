@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import TaskCard from "@/components/TaskCard";
+import EditTaskForm from "@/components/dashboard/EditTaskForm";
 import { fetchMyTasks } from "@/lib/api";
 
 const getStatusCount = (tasks, statusMatcher) =>
@@ -37,10 +38,21 @@ export default function ClientMyTasksPage() {
     };
   }, []);
 
+  const [editingTask, setEditingTask] = useState(null);
+
   const totalTasks = tasks.length;
   const openTasks = getStatusCount(tasks, (status) => status === "open");
   const inProgressTasks = getStatusCount(tasks, (status) => status.includes("progress"));
   const completedTasks = getStatusCount(tasks, (status) => status.includes("complete"));
+
+  const handleTaskUpdated = (updatedTask) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((item) =>
+        String(item._id ?? item.id) === String(updatedTask._id ?? updatedTask.id) ? updatedTask : item
+      )
+    );
+    setEditingTask(null);
+  };
 
   return (
     <div className="space-y-8">
@@ -97,11 +109,52 @@ export default function ClientMyTasksPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-          {tasks.map((task) => (
-            <TaskCard key={String(task._id ?? task.id ?? task.title)} task={task} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+            {tasks.map((task) => (
+              <div key={String(task._id ?? task.id ?? task.title)} className="group">
+                <TaskCard
+                  task={task}
+                  actions={
+                    String(task.status || "").toLowerCase() === "open" ? (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setEditingTask(task);
+                        }}
+                        className="inline-flex rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        Edit
+                      </button>
+                    ) : null
+                  }
+                />
+              </div>
+            ))}
+          </div>
+
+          {editingTask ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+              <div className="w-full max-w-3xl overflow-auto rounded-[1.75rem] bg-white p-6 shadow-2xl dark:bg-slate-950">
+                <div className="mb-6 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Edit task</p>
+                    <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">Update your open task</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingTask(null)}
+                    className="rounded-full bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    Close
+                  </button>
+                </div>
+                <EditTaskForm task={editingTask} onCancel={() => setEditingTask(null)} onUpdated={handleTaskUpdated} />
+              </div>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );

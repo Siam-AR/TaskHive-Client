@@ -65,45 +65,50 @@ const normalizeTaskId = (id) => {
   return String(id ?? "").trim();
 };
 
-export default function TaskCard({ task }) {
+export default function TaskCard({ task, actions }) {
   const taskId = normalizeTaskId(task._id ?? task.id ?? "");
 
   return (
-    <Link href={`/task/${taskId}`} className="group block h-full">
-      <div className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-sky-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950">
-        <div className="flex items-center justify-between gap-3">
-          <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:bg-slate-900">
-            {task.category || "General"}
-          </span>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadge(task.status).classes}`}>
-            {getStatusBadge(task.status).label}
-          </span>
-        </div>
-
-        <h3 className="mt-5 text-xl font-semibold text-slate-950 transition group-hover:text-sky-600 dark:text-white">
-          {task.title}
-        </h3>
-
-        <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
-          {task.description}
-        </p>
-
-        <div className="mt-6 space-y-3 text-sm text-slate-600 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <FiDollarSign className="h-4 w-4 text-sky-500" />
-            <span>${task.budget}</span>
+    <div className="group h-full">
+      <div className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-sky-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950">
+        <Link href={`/task/${taskId}`} className="flex-1 p-6">
+          <div className="flex items-center justify-between gap-3">
+            <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:bg-slate-900">
+              {task.category || "General"}
+            </span>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadge(task.status).classes}`}>
+              {getStatusBadge(task.status).label}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <FiClock className="h-4 w-4 text-sky-500" />
-            <span>Due {formatDate(task.deadline)}</span>
-          </div>
-        </div>
+          <h3 className="mt-5 text-xl font-semibold text-slate-950 transition group-hover:text-sky-600 dark:text-white">
+            {task.title}
+          </h3>
 
-        <div className="mt-auto pt-6 text-sm font-semibold text-sky-600">
-          View Details →
-        </div>
+          <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
+            {task.description}
+          </p>
+
+          <div className="mt-6 space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2">
+              <FiDollarSign className="h-4 w-4 text-sky-500" />
+              <span>${task.budget}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <FiClock className="h-4 w-4 text-sky-500" />
+              <span>Due {formatDate(task.deadline)}</span>
+            </div>
+          </div>
+
+          <div className="mt-auto pt-6">
+            <div className="flex items-center justify-between gap-4 text-sm font-semibold text-sky-600">
+              <span>View Details →</span>
+              {actions ? <span>{actions}</span> : null}
+            </div>
+          </div>
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }

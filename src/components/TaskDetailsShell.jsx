@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { FiClock, FiDollarSign, FiTag, FiUser } from "react-icons/fi";
 import TaskProposalForm from "@/components/TaskProposalForm";
+import EditTaskForm from "@/components/dashboard/EditTaskForm";
 import { useSession } from "@/lib/auth-client";
 
 function formatDate(dateString) {
@@ -50,17 +52,30 @@ function getStatusBadge(status) {
 export default function TaskDetailsShell({ task }) {
   const { data: sessionData } = useSession();
   const userRole = String(sessionData?.user?.role || "").trim();
+  const [taskState, setTaskState] = useState(task);
+  const [editingTask, setEditingTask] = useState(null);
   const showProposalSidebar = userRole === "Freelancer";
+  const isTaskOwner = String(sessionData?.user?.id || "") === String(taskState?.clientId || taskState?.clientId || taskState?.client?._id || "");
+  const canEditTask = isTaskOwner && String(taskState?.status || "").toLowerCase() === "open";
 
-  const clientName = task?.client?.name || task?.clientName || null;
-  const clientEmail = task?.clientEmail || task?.client?.email || null;
+  const clientName = taskState?.client?.name || taskState?.clientName || null;
+  const clientEmail = taskState?.clientEmail || taskState?.client?.email || null;
   const clientDisplayName = clientName || clientEmail || "Unknown client";
   const clientDisplayContact = clientName && clientEmail ? clientEmail : clientName ? "Contact available after application" : clientEmail || null;
 
   return (
     <section className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
       <div className={`grid gap-8 ${showProposalSidebar ? "lg:grid-cols-[2fr_1fr]" : "grid-cols-1"}`}>
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <div className="relative rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          {canEditTask ? (
+            <button
+              type="button"
+              onClick={() => setEditingTask(taskState)}
+              className="absolute right-6 top-6 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              Edit task
+            </button>
+          ) : null}
           <div className="flex flex-wrap items-center gap-3">
             <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:bg-slate-900">
               {task.category || "General"}
@@ -78,23 +93,24 @@ export default function TaskDetailsShell({ task }) {
               <div className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
                 <FiDollarSign className="text-sky-500" /> Budget
               </div>
-              <p className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">${task.budget}</p>
+              <p className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">${taskState.budget}</p>
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
                 <FiClock className="text-sky-500" /> Deadline
               </div>
-              <p className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">{formatDate(task.deadline)}</p>
+              <p className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">{formatDate(taskState.deadline)}</p>
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
                 <FiTag className="text-sky-500" /> Category
               </div>
-              <p className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">{task.category || "General"}</p>
+              <p className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">{taskState.category || "General"}</p>
             </div>
           </div>
+
         </div>
 
         {showProposalSidebar ? (
@@ -136,6 +152,30 @@ export default function TaskDetailsShell({ task }) {
           </aside>
         ) : null}
       </div>
+
+      {editingTask ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+          <div className="w-full max-w-3xl overflow-auto rounded-[1.75rem] bg-white p-6 shadow-2xl dark:bg-slate-950">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Edit task</p>
+                <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">Update your open task</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingTask(null)}
+                className="rounded-full bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+              >
+                Close
+              </button>
+            </div>
+            <EditTaskForm task={editingTask} onCancel={() => setEditingTask(null)} onUpdated={(updatedTask) => {
+              setTaskState(updatedTask);
+              setEditingTask(null);
+            }} />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
