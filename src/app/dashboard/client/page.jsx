@@ -1,14 +1,72 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { FiBriefcase, FiClipboard, FiDollarSign, FiFolder } from "react-icons/fi";
 import DashboardStatsCard from "@/components/dashboard/DashboardStatsCard";
+import { getClientDashboardOverview } from "@/lib/dashboard-client-overview";
 
-const stats = [
-  { title: "Total tasks", value: "0", subtitle: "All tasks you have posted", icon: FiBriefcase },
-  { title: "Open tasks", value: "0", subtitle: "Waiting for the right freelancer", icon: FiFolder },
-  { title: "In progress", value: "0", subtitle: "Tasks currently underway", icon: FiClipboard },
-  { title: "Total spent", value: "$0", subtitle: "Your total project spend", icon: FiDollarSign },
+const loadingStats = [
+  { title: "Total tasks", value: "...", subtitle: "All tasks you have posted", icon: FiBriefcase },
+  { title: "Open tasks", value: "...", subtitle: "Waiting for the right freelancer", icon: FiFolder },
+  { title: "In progress", value: "...", subtitle: "Tasks currently underway", icon: FiClipboard },
+  { title: "Total spent", value: "$...", subtitle: "Your total project spend", icon: FiDollarSign },
 ];
 
 export default function ClientDashboardHomePage() {
+  const [overview, setOverview] = useState({
+    totalTasks: 0,
+    openTasks: 0,
+    inProgressTasks: 0,
+    totalSpent: 0,
+    taskError: null,
+    transactionError: null,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadOverview = async () => {
+      try {
+        const data = await getClientDashboardOverview();
+        if (!mounted) return;
+
+        setOverview({
+          totalTasks: data.totalTasks,
+          openTasks: data.openTasks,
+          inProgressTasks: data.inProgressTasks,
+          totalSpent: data.totalSpent,
+          taskError: data.taskError || null,
+          transactionError: data.transactionError || null,
+        });
+
+        const combinedError = [data.taskError, data.transactionError].filter(Boolean).join(" • ");
+        if (combinedError) {
+          setError(combinedError);
+        }
+      } catch (loadError) {
+        if (!mounted) return;
+        setError(loadError?.message || "Unable to load dashboard overview.");
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    loadOverview();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const stats = [
+    { title: "Total tasks", value: overview.totalTasks.toString(), subtitle: "All tasks you have posted", icon: FiBriefcase },
+    { title: "Open tasks", value: overview.openTasks.toString(), subtitle: "Waiting for the right freelancer", icon: FiFolder },
+    { title: "In progress", value: overview.inProgressTasks.toString(), subtitle: "Tasks currently underway", icon: FiClipboard },
+    { title: "Total spent", value: `$${overview.totalSpent.toFixed(2)}`, subtitle: "Your total project spend", icon: FiDollarSign },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="rounded-[1.75rem] border border-slate-200 bg-gradient-to-r from-sky-600 via-cyan-500 to-indigo-600 p-6 text-white shadow-sm">
@@ -24,6 +82,12 @@ export default function ClientDashboardHomePage() {
           <DashboardStatsCard key={stat.title} {...stat} />
         ))}
       </div>
+
+      {error ? (
+        <div className="rounded-[1.5rem] border border-rose-200 bg-rose-50 px-6 py-5 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
+          {error}
+        </div>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">

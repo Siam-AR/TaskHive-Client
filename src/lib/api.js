@@ -173,6 +173,10 @@ export async function createTransaction(payload) {
   return apiFetch(`/api/transactions`, { method: "POST", body: JSON.stringify(payload) });
 }
 
+export async function fetchDashboardClientOverview() {
+  return apiFetch(`/api/dashboard/client`, { method: "GET" });
+}
+
 export async function fetchMyTransactions() {
   return apiFetch(`/api/transactions/my`, { method: "GET" });
 }
@@ -189,6 +193,7 @@ const api = {
   fetchProposalsForTask,
   createTransaction,
   fetchMyTransactions,
+  fetchDashboardClientOverview,
 };
 
 export default api;
