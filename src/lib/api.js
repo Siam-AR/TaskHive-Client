@@ -94,7 +94,16 @@ export async function createTask(payload) {
 }
 
 export async function fetchMyTasks() {
-  return apiFetch(`/api/tasks/my`, { method: "GET" });
+  const response = await apiFetch(`/api/tasks/my`, { method: "GET" });
+
+  if (response && Array.isArray(response.data)) {
+    return {
+      ...response,
+      data: response.data.map(normalizeTaskData).filter(Boolean),
+    };
+  }
+
+  return response;
 }
 
 export async function submitProposal(payload) {
@@ -107,6 +116,45 @@ export async function fetchMyProposals() {
 
 export async function fetchProposalsForTask(taskId) {
   return apiFetch(`/api/proposals/task/${encodeURIComponent(taskId)}`, { method: "GET" });
+}
+
+const normalizeIdValue = (id) => {
+  if (typeof id === "string") {
+    return id.trim();
+  }
+
+  if (id && typeof id === "object") {
+    if (typeof id.toHexString === "function") {
+      return id.toHexString();
+    }
+
+    if (typeof id.toString === "function") {
+      const stringValue = id.toString();
+      if (stringValue.startsWith("ObjectId(\"") && stringValue.endsWith("\")")) {
+        return stringValue.slice(9, -2);
+      }
+      return stringValue;
+    }
+  }
+
+  return String(id ?? "").trim();
+};
+
+function normalizeTaskData(task) {
+  if (!task || typeof task !== "object") {
+    return null;
+  }
+
+  const normalizedId = normalizeIdValue(task._id ?? task.id ?? "");
+
+  return {
+    ...task,
+    _id: normalizedId,
+    id: normalizedId,
+    status: String(task.status || "open").trim(),
+    category: task.category || task.type || "General",
+    budget: Number(task.budget ?? task.amount ?? 0),
+  };
 }
 
 export async function createTransaction(payload) {

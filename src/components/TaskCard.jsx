@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FiClock, FiDollarSign, FiUser } from "react-icons/fi";
+import { FiClock, FiDollarSign } from "react-icons/fi";
 
 function formatDate(dateString) {
   if (!dateString) {
@@ -43,9 +43,33 @@ function getStatusBadge(status) {
   };
 }
 
+const normalizeTaskId = (id) => {
+  if (typeof id === "string") {
+    return id.trim();
+  }
+
+  if (id && typeof id === "object") {
+    if (typeof id.toHexString === "function") {
+      return id.toHexString();
+    }
+
+    if (typeof id.toString === "function") {
+      const stringValue = id.toString();
+      if (stringValue.startsWith("ObjectId(\"") && stringValue.endsWith("\")")) {
+        return stringValue.slice(9, -2);
+      }
+      return stringValue;
+    }
+  }
+
+  return String(id ?? "").trim();
+};
+
 export default function TaskCard({ task }) {
+  const taskId = normalizeTaskId(task._id ?? task.id ?? "");
+
   return (
-    <Link href={`/task/${task._id}`} className="group block h-full">
+    <Link href={`/task/${taskId}`} className="group block h-full">
       <div className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-sky-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center justify-between gap-3">
           <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:bg-slate-900">
@@ -73,11 +97,6 @@ export default function TaskCard({ task }) {
           <div className="flex items-center gap-2">
             <FiClock className="h-4 w-4 text-sky-500" />
             <span>Due {formatDate(task.deadline)}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <FiUser className="h-4 w-4 text-sky-500" />
-            <span>Client: {task.client?.name || "Unknown client"}</span>
           </div>
         </div>
 
