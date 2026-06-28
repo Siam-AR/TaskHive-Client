@@ -65,7 +65,7 @@ export async function POST(request) {
     const budget = Number(proposal.proposed_budget ?? proposal.budget ?? 0);
     const amountCents = Math.round(budget * 100);
     const origin = request.headers.get("origin") || new URL(request.url).origin;
-    const successUrl = `${origin}/payment/success?proposalId=${encodeURIComponent(proposalId)}`;
+    const successUrl = `${origin}/payment/success?proposalId=${encodeURIComponent(proposalId)}&sessionId={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${origin}/dashboard/client/proposals?canceled=true`;
     const fallbackUrl = createFallbackCheckoutUrl({
       proposalId,

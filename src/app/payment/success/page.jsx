@@ -20,30 +20,49 @@ export default function PaymentSuccessPage() {
     }
 
     const finalizeProposal = async () => {
-      try {
-        const headers = await getDashboardHeaders();
-        const response = await fetch(`/api/dashboard/client/proposals/${encodeURIComponent(proposalId)}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            ...headers,
-          },
-          body: JSON.stringify({ action: "accept" }),
-          cache: "no-store",
-        });
-        const result = await response.json();
+        try {
+          const sessionId = searchParams.get("sessionId") || "";
 
-        if (result?.success) {
-          setStatusMessage("The proposal was accepted and the task is now marked as in progress.");
-        } else {
-          setStatusMessage(result?.message || "The proposal could not be finalized.");
+          // If sessionId is present, confirm payment with server-side Stripe check and record payment
+          if (sessionId) {
+            const confirmRes = await fetch(`/api/payments/confirm`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId, proposalId }),
+              cache: "no-store",
+            });
+            const confirmData = await confirmRes.json();
+            if (confirmData?.success && confirmData?.data?.payment_status === "complete") {
+              setStatusMessage("Payment confirmed. The proposal was accepted and the task is now in progress.");
+              setIsProcessing(false);
+              return;
+            }
+          }
+
+          // Fallback: if no session or not complete, still call original finalize to set proposal accepted (keeps previous behavior)
+          const headers = await getDashboardHeaders();
+          const response = await fetch(`/api/dashboard/client/proposals/${encodeURIComponent(proposalId)}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              ...headers,
+            },
+            body: JSON.stringify({ action: "accept" }),
+            cache: "no-store",
+          });
+          const result = await response.json();
+
+          if (result?.success) {
+            setStatusMessage("The proposal was accepted and the task is now marked as in progress.");
+          } else {
+            setStatusMessage(result?.message || "The proposal could not be finalized.");
+          }
+        } catch (error) {
+          setStatusMessage(error?.message || "The proposal could not be finalized.");
+        } finally {
+          setIsProcessing(false);
         }
-      } catch (error) {
-        setStatusMessage(error?.message || "The proposal could not be finalized.");
-      } finally {
-        setIsProcessing(false);
-      }
-    };
+      };
 
     finalizeProposal();
   }, [proposalId]);
