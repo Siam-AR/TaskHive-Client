@@ -69,7 +69,7 @@ export default function ClientDashboardHomePage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-gradient-to-r from-sky-600 via-cyan-500 to-indigo-600 p-6 text-white shadow-sm">
+      <div className="rounded-[1.75rem] border border-slate-200 bg-linear-to-r from-sky-600 via-cyan-500 to-indigo-600 p-6 text-white shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-100">Welcome back</p>
         <h2 className="mt-2 text-3xl font-semibold">Your client workspace is ready</h2>
         <p className="mt-3 max-w-2xl text-sm text-sky-50/90 sm:text-base">

@@ -1,16 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { FiCreditCard } from "react-icons/fi";
 
 export default function PaymentCheckoutPage() {
-  const searchParams = useSearchParams();
-  const proposalId = searchParams.get("proposalId") || "";
-  const taskTitle = searchParams.get("taskTitle") || "Unknown task";
-  const freelancerEmail = searchParams.get("freelancerEmail") || "Unknown freelancer";
-  const amount = useMemo(() => Number(searchParams.get("amount") || 0), [searchParams]);
+  const [proposalId, setProposalId] = useState("");
+  const [taskTitle, setTaskTitle] = useState("Unknown task");
+  const [freelancerEmail, setFreelancerEmail] = useState("Unknown freelancer");
+  const [amount, setAmount] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setProposalId(params.get("proposalId") || "");
+    setTaskTitle(params.get("taskTitle") || "Unknown task");
+    setFreelancerEmail(params.get("freelancerEmail") || "Unknown freelancer");
+    setAmount(Number(params.get("amount") || 0));
+  }, []);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 dark:bg-slate-950">
