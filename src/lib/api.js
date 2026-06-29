@@ -190,6 +190,15 @@ export async function updateAdminUserBlockStatus(userId, isBlocked) {
   });
 }
 
+export async function fetchAdminTasks(query = {}) {
+  const qs = new URLSearchParams(query).toString();
+  return apiFetch(`/api/admin/tasks${qs ? `?${qs}` : ""}`, { method: "GET" });
+}
+
+export async function deleteAdminTask(taskId) {
+  return apiFetch(`/api/admin/tasks/${encodeURIComponent(taskId)}`, { method: "DELETE" });
+}
+
 export async function fetchMyTransactions() {
   return apiFetch(`/api/transactions/my`, { method: "GET" });
 }
@@ -209,6 +218,8 @@ const api = {
   fetchDashboardClientOverview,
   fetchAdminUsers,
   updateAdminUserBlockStatus,
+  fetchAdminTasks,
+  deleteAdminTask,
 };
 
 export default api;
