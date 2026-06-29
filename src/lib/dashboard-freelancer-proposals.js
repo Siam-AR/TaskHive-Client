@@ -45,13 +45,27 @@ export async function getFreelancerProposals(freelancerEmail) {
   const proposalsCollection = db.collection("proposals");
   const tasksCollection = db.collection("tasks");
 
+  const normalizedEmail = String(freelancerEmail || "").trim().toLowerCase();
+  const filter = normalizedEmail
+    ? {
+        $or: [
+          { freelancerEmail: normalizedEmail },
+          { freelancer_email: normalizedEmail },
+          { freelancerEmail: freelancerEmail },
+          { freelancer_email: freelancerEmail },
+          { freelancerId: freelancerEmail },
+          { freelancer_id: freelancerEmail },
+        ],
+      }
+    : {};
+
   const proposals = await proposalsCollection
-    .find({ freelancerEmail })
+    .find(filter)
     .sort({ createdAt: -1, submitted_at: -1 })
     .toArray();
 
   const taskIds = proposals
-    .map((proposal) => normalizeId(proposal.taskId))
+    .map((proposal) => normalizeId(proposal.taskId || proposal.task_id || proposal.task || ""))
     .filter(Boolean);
 
   const uniqueTaskIds = [...new Set(taskIds)];
@@ -79,13 +93,13 @@ export async function getFreelancerProposals(freelancerEmail) {
   });
 
   return proposals.map((proposal) => {
-    const taskKey = normalizeId(proposal.taskId);
+    const taskKey = normalizeId(proposal.taskId || proposal.task_id || proposal.task || "");
     const submittedAt = normalizeDateValue(proposal.createdAt ?? proposal.submitted_at);
 
     return {
       id: normalizeId(proposal._id),
-      taskTitle: taskTitleById.get(taskKey) || "Unknown task",
-      proposedBudget: Number(proposal.expectedAmount ?? proposal.proposed_budget ?? proposal.budget ?? 0),
+      taskTitle: taskTitleById.get(taskKey) || proposal.task_title || proposal.taskTitle || "Unknown task",
+      proposedBudget: Number(proposal.expectedAmount ?? proposal.proposed_budget ?? proposal.proposedBudget ?? proposal.budget ?? 0),
       submittedAt,
       status: String(proposal.status || "pending").toLowerCase(),
     };
