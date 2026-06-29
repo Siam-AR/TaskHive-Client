@@ -99,8 +99,10 @@ export default function AdminSidebar({ user }) {
         </button>
       </div>
 
-      <aside className="hidden w-72 shrink-0 lg:block">
-        <div className="sticky top-6 rounded-[2rem] border border-slate-800 bg-slate-950/95 p-4 shadow-sm shadow-slate-950/30">
+      {/* <aside className="hidden w-72 shrink-0 lg:block">*/}
+       <aside className="hidden lg:block">
+        {/* <div className="sticky top-6 rounded-[2rem] border border-slate-800 bg-slate-950/95 p-4 shadow-sm shadow-slate-950/30"> */}
+        <div className="sticky top-5 w-[280px] rounded-3xl border border-slate-800 bg-slate-950/95 p-5 shadow-lg shadow-slate-950/20">
           {sidebarContent}
         </div>
       </aside>
