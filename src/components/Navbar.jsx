@@ -23,7 +23,7 @@ const Navbar = () => {
     isAuthenticated && user?.role
       ? `/dashboard/${user.role.toLowerCase()}`
       : "/auth/signin";
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
@@ -34,15 +34,12 @@ const Navbar = () => {
       return;
     }
 
-    const storedTheme = window.localStorage.getItem("skillswap-theme");
-    const initialTheme = storedTheme
-      ? storedTheme === "dark"
-      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialTheme = true;
 
     setIsDarkMode(initialTheme);
     setHasMounted(true);
-    document.documentElement.classList.toggle("dark", initialTheme);
-    window.localStorage.setItem("skillswap-theme", initialTheme ? "dark" : "light");
+    document.documentElement.classList.add("dark");
+    window.localStorage.setItem("skillswap-theme", "dark");
   }, []);
 
   useEffect(() => {
@@ -50,9 +47,9 @@ const Navbar = () => {
       return;
     }
 
-    document.documentElement.classList.toggle("dark", isDarkMode);
-    window.localStorage.setItem("skillswap-theme", isDarkMode ? "dark" : "light");
-  }, [hasMounted, isDarkMode]);
+    document.documentElement.classList.add("dark");
+    window.localStorage.setItem("skillswap-theme", "dark");
+  }, [hasMounted]);
 
   const toggleTheme = () => {
     setIsDarkMode((current) => !current);
@@ -180,7 +177,9 @@ const Navbar = () => {
             aria-label={
               isDarkMode ? "Switch to light mode" : "Switch to dark mode"
             }
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-transparent transition hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
+            aria-hidden="true"
+            tabIndex={-1}
+            className="invisible pointer-events-none flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-transparent transition hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
           >
             {isDarkMode ? (
               <FiMoon className="h-5 w-5 shrink-0" />
