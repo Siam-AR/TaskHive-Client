@@ -1,4 +1,4 @@
-import React from 'react';
+import Link from "next/link";
 
 export default function FreelancerDashboardOverviewPage() {
   return (
@@ -24,6 +24,9 @@ export default function FreelancerDashboardOverviewPage() {
           <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
             Start by browsing tasks and sending proposals to clients. You can track all submitted work and earnings from the sidebar navigation.
           </p>
+          <Link href="/browse-tasks" className="mt-6 inline-flex rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700">
+            Browse public tasks
+          </Link>
         </div>
       </div>
     </div>
