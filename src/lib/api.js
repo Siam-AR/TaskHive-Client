@@ -63,6 +63,7 @@ export async function getAuthMe() {
   return apiFetch("/api/auth/me", { method: "GET" });
 }
 
+export { apiFetch };
 export async function fetchTasks(query = {}) {
   const qs = new URLSearchParams(query).toString();
   return apiFetch(`/api/tasks${qs ? `?${qs}` : ""}`, { method: "GET" });
