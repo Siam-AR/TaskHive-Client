@@ -16,6 +16,7 @@ async function apiFetch(path, opts = {}) {
         headers["X-User-Id"] = sessionUser.id || sessionUser._id || sessionUser.userId || "";
         headers["X-User-Email"] = sessionUser.email || "";
         headers["X-User-Role"] = sessionUser.role || "";
+        headers["X-User-Name"] = sessionUser.name || sessionUser.fullName || sessionUser.displayName || "";
       }
     } catch (error) {
       console.warn("Unable to attach auth headers", error);

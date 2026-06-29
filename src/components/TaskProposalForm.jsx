@@ -85,10 +85,10 @@ export default function TaskProposalForm({ taskId }) {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          taskId,
-          expectedAmount: Number(form.expectedAmount),
-          estimatedDays: Number(form.estimatedDays),
-          coverLetter: form.coverLetter,
+          task_id: taskId,
+          proposed_budget: Number(form.expectedAmount),
+          estimated_days: Number(form.estimatedDays),
+          cover_note: form.coverLetter,
         }),
       });
 

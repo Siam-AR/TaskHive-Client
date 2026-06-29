@@ -18,7 +18,7 @@ export default function PaymentSuccessPage() {
         setProposalId(pid);
         const sessionId = params.get("sessionId") || "";
 
-        if (!proposalId) {
+        if (!pid) {
           setStatusMessage("No proposal selected.");
           setIsProcessing(false);
           return;

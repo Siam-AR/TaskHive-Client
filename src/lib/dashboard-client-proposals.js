@@ -11,6 +11,7 @@ export async function getDashboardHeaders() {
       headers["X-User-Id"] = sessionUser.id || sessionUser._id || sessionUser.userId || "";
       headers["X-User-Email"] = sessionUser.email || "";
       headers["X-User-Role"] = sessionUser.role || "";
+      headers["X-User-Name"] = sessionUser.name || sessionUser.fullName || sessionUser.displayName || sessionUser.email || "";
     }
   } catch (error) {
     console.warn("Unable to attach dashboard proposal headers", error);

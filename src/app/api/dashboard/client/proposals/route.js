@@ -68,8 +68,9 @@ export async function GET(request) {
         taskId: normalizeId(proposal.task_id || proposal.taskId || ""),
         taskTitle: task?.title || proposal.task_title || "Untitled Task",
         taskStatus,
-        freelancerName: freelancerUser?.name || proposal.freelancer_name || proposal.freelancer_email || "Freelancer",
-        freelancerEmail: proposal.freelancer_email || "",
+        freelancerName:
+          freelancerUser?.name || freelancerUser?.fullName || freelancerUser?.displayName || proposal.freelancer_name || proposal.freelancerName || proposal.freelancer_email || "Freelancer",
+        freelancerEmail: proposal.freelancer_email || proposal.freelancerEmail || "",
         proposedBudget: Number(proposal.proposed_budget ?? proposal.budget ?? 0),
         estimatedDays: Number(proposal.estimated_days ?? proposal.days ?? 0),
         coverNote: proposal.cover_note || proposal.message || "",
