@@ -60,10 +60,14 @@ export async function POST(request) {
     const existing = await paymentsColl.findOne({ $or: [{ stripe_session_id: session.id }, { transaction_id: transactionId }] });
 
     let paymentDoc;
+    let insertResult = null;
     if (existing) {
       // If existing record is pending but payment now completed, update it
       if ((existing.payment_status === 'pending' || !existing.payment_status) && paid) {
-        await paymentsColl.updateOne({ _id: existing._id }, { $set: { payment_status: 'complete', paid_at: new Date(), amount, transaction_id: transactionId, metadata } });
+        await paymentsColl.updateOne(
+          { _id: existing._id },
+          { $set: { payment_status: 'complete', paid_at: new Date(), amount, transaction_id: transactionId, metadata } }
+        );
         const updated = await paymentsColl.findOne({ _id: existing._id });
         paymentDoc = updated;
       } else {
@@ -82,7 +86,7 @@ export async function POST(request) {
         metadata,
         createdAt: new Date(),
       };
-      const insertResult = await paymentsColl.insertOne(paymentDoc);
+      insertResult = await paymentsColl.insertOne(paymentDoc);
       paymentDoc._id = insertResult.insertedId;
     }
 
@@ -107,7 +111,7 @@ export async function POST(request) {
       }
     }
 
-    return NextResponse.json({ success: true, data: { ...paymentDoc, _id: insertResult.insertedId } });
+    return NextResponse.json({ success: true, data: paymentDoc });
   } catch (error) {
     return NextResponse.json({ success: false, message: error?.message || "Failed to confirm payment" }, { status: 500 });
   }

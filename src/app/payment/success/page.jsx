@@ -29,20 +29,29 @@ export default function PaymentSuccessPage() {
           const confirmRes = await fetch(`/api/payments/confirm`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sessionId, proposalId }),
+            body: JSON.stringify({ sessionId, proposalId: pid }),
             cache: "no-store",
           });
           const confirmData = await confirmRes.json();
+
           if (confirmData?.success && confirmData?.data?.payment_status === "complete") {
             setStatusMessage("Payment confirmed. The proposal was accepted and the task is now in progress.");
             setIsProcessing(false);
             return;
           }
+
+          setStatusMessage(
+            confirmData?.message
+              ? `Payment confirmation failed: ${confirmData.message}`
+              : "Payment was not completed. Please retry or contact support."
+          );
+          setIsProcessing(false);
+          return;
         }
 
-        // Fallback: if no session or not complete, still call original finalize to set proposal accepted (keeps previous behavior)
+        // Fallback: if no sessionId, finalize the proposal directly for local/demo checkout.
         const headers = await getDashboardHeaders();
-        const response = await fetch(`/api/dashboard/client/proposals/${encodeURIComponent(proposalId)}`, {
+        const response = await fetch(`/api/dashboard/client/proposals/${encodeURIComponent(pid)}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
