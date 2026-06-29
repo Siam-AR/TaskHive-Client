@@ -101,7 +101,7 @@ export async function getHomepageData() {
 
   const payoutAggregation = await paymentsCollection
     .aggregate([
-      { $match: { payment_status: "completed" } },
+      { $match: { payment_status: { $in: ["complete", "completed", "paid"] } } },
       { $group: { _id: null, total: { $sum: "$amount" } } },
     ])
     .toArray();
