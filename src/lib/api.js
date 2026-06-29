@@ -179,6 +179,17 @@ export async function fetchDashboardClientOverview() {
   return apiFetch(`/api/dashboard/client`, { method: "GET" });
 }
 
+export async function fetchAdminUsers() {
+  return apiFetch(`/api/admin/users`, { method: "GET" });
+}
+
+export async function updateAdminUserBlockStatus(userId, isBlocked) {
+  return apiFetch(`/api/admin/users/${encodeURIComponent(userId)}/block`, {
+    method: "PATCH",
+    body: JSON.stringify({ isBlocked }),
+  });
+}
+
 export async function fetchMyTransactions() {
   return apiFetch(`/api/transactions/my`, { method: "GET" });
 }
@@ -196,6 +207,8 @@ const api = {
   createTransaction,
   fetchMyTransactions,
   fetchDashboardClientOverview,
+  fetchAdminUsers,
+  updateAdminUserBlockStatus,
 };
 
 export default api;
