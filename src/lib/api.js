@@ -199,6 +199,11 @@ export async function deleteAdminTask(taskId) {
   return apiFetch(`/api/admin/tasks/${encodeURIComponent(taskId)}`, { method: "DELETE" });
 }
 
+export async function fetchAdminTransactions(query = {}) {
+  const qs = new URLSearchParams(query).toString();
+  return apiFetch(`/api/admin/transactions${qs ? `?${qs}` : ""}`, { method: "GET" });
+}
+
 export async function fetchMyTransactions() {
   return apiFetch(`/api/transactions/my`, { method: "GET" });
 }
